@@ -1,6 +1,9 @@
 import { betterAuth } from "better-auth"
 import { mongodbAdapter } from "@better-auth/mongo-adapter"
+import { APIError } from "better-auth/api"
 import { MongoClient } from "mongodb"
+
+import { DEFAULT_USER_ROLE, isUserRole, USER_ROLES } from "@/lib/user-roles"
 
 // The MongoDB client is created once per server process. When MONGODB_URI is
 // missing, email/password auth is unavailable and better-auth reports it,
@@ -23,11 +26,44 @@ const google =
 
 export const auth = betterAuth({
   ...(mongoClient
-    ? { database: mongodbAdapter(mongoClient.db('hireloop'), { client: mongoClient }) }
+    ? {
+        database: mongodbAdapter(mongoClient.db("hireloop"), {
+          client: mongoClient,
+        }),
+      }
     : {}),
   emailAndPassword: {
     enabled: true,
     minPasswordLength: 8,
+  },
+  user: {
+    additionalFields: {
+      role: {
+        type: ["seeker", "recruiter", "admin"],
+        required: true,
+        defaultValue: DEFAULT_USER_ROLE,
+        input: true,
+      },
+    },
+  },
+  databaseHooks: {
+    user: {
+      create: {
+        // Accept only known roles. OAuth sign-ups don't send a role, so they
+        // fall back to the default instead of failing.
+        before: async (user) => {
+          const role = user.role ?? DEFAULT_USER_ROLE
+
+          if (!isUserRole(role)) {
+            throw new APIError("BAD_REQUEST", {
+              message: `Role must be one of: ${USER_ROLES.join(", ")}.`,
+            })
+          }
+
+          return { data: { ...user, role } }
+        },
+      },
+    },
   },
   socialProviders: {
     github: {

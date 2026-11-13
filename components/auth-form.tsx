@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { authClient } from "@/lib/auth-client"
+import { DEFAULT_USER_ROLE, type UserRole } from "@/lib/user-roles"
+import { cn } from "@/lib/utils"
 
 type AuthMode = "sign-in" | "sign-up"
 
@@ -34,6 +36,21 @@ const content = {
 
 const MIN_PASSWORD_LENGTH = 8
 const DEFAULT_ERROR = "Something went wrong. Please try again."
+
+const roleOptions: { value: UserRole; label: string;}[] = [
+  {
+    value: "seeker",
+    label: "Job seeker"
+  },
+  {
+    value: "recruiter",
+    label: "Recruiter"
+  },
+  {
+    value: "admin",
+    label: "Admin"
+  },
+]
 
 const fieldClassName =
   "h-10 border-white/15 bg-white/5 text-white placeholder:text-white/40 focus-visible:border-violet-400 focus-visible:ring-violet-400/30"
@@ -66,6 +83,7 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
   const router = useRouter()
 
   const [error, setError] = React.useState<string | null>(null)
+  const [role, setRole] = React.useState<UserRole>(DEFAULT_USER_ROLE)
   const [pending, setPending] = React.useState<"email" | "google" | null>(null)
   const isPending = pending !== null
 
@@ -100,7 +118,7 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
     setPending("email")
 
     try {
-      const { error: authError, data:userdata } =
+      const { error: authError, data: userdata } =
         mode === "sign-in"
           ? await authClient.signIn.email({
               email,
@@ -111,9 +129,10 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
               name,
               email,
               password,
+              role,
               callbackURL: "/",
             })
-       console.log(userdata)
+      console.log(userdata)
       if (authError) {
         setError(authError.message ?? DEFAULT_ERROR)
         setPending(null)
@@ -210,6 +229,46 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
                   className={fieldClassName}
                 />
               </div>
+            )}
+
+            {mode === "sign-up" && (
+              <fieldset className="space-y-2">
+                <legend className="text-sm font-medium text-white/80">
+                  I am a…
+                </legend>
+                <div className="grid grid-cols-3 gap-2">
+                  {roleOptions.map((option) => {
+                    const selected = role === option.value
+
+                    return (
+                      <label
+                        key={option.value}
+                        
+                        className={cn(
+                          "flex cursor-pointer flex-col items-center gap-0.5 rounded-lg border px-2 py-2 text-center transition-colors select-none",
+                          "has-focus-visible:ring-3 has-focus-visible:ring-violet-400/40",
+                          selected
+                            ? "border-violet-400 bg-violet-500/15 text-white"
+                            : "border-white/15 bg-white/5 text-white/60 hover:bg-white/10 hover:text-white"
+                        )}
+                      >
+                        <input
+                          type="radio"
+                          name="role"
+                          value={option.value}
+                          checked={selected}
+                          onChange={() => setRole(option.value)}
+                          className="sr-only"
+                        />
+                        <span className="text-sm font-medium">
+                          {option.label}
+                        </span>
+                        
+                      </label>
+                    )
+                  })}
+                </div>
+              </fieldset>
             )}
 
             <div className="space-y-2">

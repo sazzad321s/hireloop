@@ -36,13 +36,13 @@ export function Hero() {
 
       <div className="relative mx-auto w-full max-w-6xl px-4 pt-12 pb-8 sm:px-6 sm:pt-16 lg:px-8">
         {/* Badge */}
-        <div className="flex justify-center">
-          <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs font-medium tracking-wide backdrop-blur">
-            <span className="flex size-4 items-center justify-center rounded-lg bg-orange-500">
+        <div className="flex justify-center ">
+          <div className="inline-flex items-center gap-2 rounded-full border border-t-white border-x-white bg-black px-4 py-1.5 text-xs font-medium tracking-wide backdrop-blur">
+            <span className="flex size-4 items-center justify-center rounded-lg bg-black">
               <Sparkles className="size-3 text-white" />
             </span>
-            <span className="text-orange-400">50,000+</span>
-            <span className="text-white/70 uppercase">New jobs this month</span>
+            <span className="text-white">50,000+</span>
+            <span className="text-white uppercase">New jobs this month</span>
           </div>
         </div>
 

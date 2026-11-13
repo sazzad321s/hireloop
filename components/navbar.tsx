@@ -16,6 +16,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet"
 import { cn } from "@/lib/utils"
+import { useSession } from "@/lib/auth-client"
 
 const navLinks = [
   { label: "Browse Jobs", href: "/jobs" },
@@ -28,6 +29,8 @@ const ctaClassName =
 
 export function Navbar() {
   const [open, setOpen] = React.useState(false)
+  const {data: session} = useSession();
+  console.log("Session in Navbar:", session);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-white/5 bg-neutral-950/60 backdrop-blur-md">
@@ -50,18 +53,31 @@ export function Navbar() {
             ))}
           </nav>
           <div className="flex items-center gap-5">
-            <Link
-              href="/sign-in"
-              className="text-sm text-white/90 transition-colors hover:text-white"
-            >
-              Sign in
-            </Link>
-            <Link
-              href="/sign-up"
-              className={cn(buttonVariants(), ctaClassName)}
-            >
-              Get Started
-            </Link>
+            {
+              session ? (
+                <span className="text-sm text-white/70">
+                  Hi, {session.user?.name}
+                </span>
+              ) : (
+                <>
+                  <Link
+                    href="/sign-in"
+                    className={cn(
+                      buttonVariants({ variant: "ghost" }),
+                      "text-white hover:bg-white/10 hover:text-white"
+                    )}
+                  >
+                    Sign in
+                  </Link>
+                  <Link
+                    href="/sign-up"
+                    className={cn(buttonVariants(), ctaClassName)}
+                  >
+                    Get Started
+                  </Link>
+                </>
+              )
+            }
           </div>
         </div>
 
@@ -107,23 +123,35 @@ export function Navbar() {
             </nav>
 
             <div className="mt-auto flex flex-col gap-2 border-t border-white/10 p-4">
-              <Link
-                href="/sign-in"
-                onClick={() => setOpen(false)}
-                className={cn(
-                  buttonVariants({ variant: "ghost" }),
-                  "text-white hover:bg-white/10 hover:text-white"
-                )}
-              >
-                Sign in
-              </Link>
-              <Link
-                href="/sign-up"
-                onClick={() => setOpen(false)}
-                className={cn(buttonVariants(), ctaClassName)}
-              >
-                Get Started
-              </Link>
+              {
+                session ? (
+                  <span
+                    className="rounded-md px-2 py-2 text-sm text-white/70 transition-colors hover:bg-white/5 hover:text-white"
+                  >
+                    Hi, {session.user?.name}
+                  </span>
+                ) : (
+                  <>
+                    <Link
+                      href="/sign-in"
+                      onClick={() => setOpen(false)}
+                      className={cn(
+                        buttonVariants({ variant: "ghost" }),
+                        "text-white hover:bg-white/10 hover:text-white"
+                      )}
+                    >
+                      Sign in
+                    </Link>
+                    <Link
+                      href="/sign-up"
+                      onClick={() => setOpen(false)}
+                      className={cn(buttonVariants(), ctaClassName)}
+                    >
+                      Get Started
+                    </Link>
+                  </>
+                )
+              }
             </div>
           </SheetContent>
         </Sheet>

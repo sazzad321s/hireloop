@@ -16,7 +16,8 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet"
 import { cn } from "@/lib/utils"
-import { useSession } from "@/lib/auth-client"
+import { signOut, useSession } from "@/lib/auth-client"
+import { useRouter } from "next/navigation"
 
 const navLinks = [
   { label: "Browse Jobs", href: "/jobs" },
@@ -29,8 +30,20 @@ const ctaClassName =
 
 export function Navbar() {
   const [open, setOpen] = React.useState(false)
+  const router = useRouter();
   const {data: session} = useSession();
   console.log("Session in Navbar:", session);
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      console.log("User signed out successfully");
+      router.refresh(); // Refresh the page to update the UI after sign-out
+      router.push("/"); // Redirect to the sign-in page after sign-out
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-white/5 bg-neutral-950/60 backdrop-blur-md">
@@ -54,17 +67,26 @@ export function Navbar() {
           </nav>
           <div className="flex items-center gap-5">
             {
-              session ? (
+              session ? ( <>
                 <span className="text-sm text-white/70">
-                  Hi, {session.user?.name}
+                  Welcome, {session.user?.name}
                 </span>
+                    <Button
+                    onClick={handleSignOut}
+                    className={cn(
+                     buttonVariants(), ctaClassName 
+                    )}
+                  >
+                    Sign Out
+                  </Button>
+                </>
               ) : (
                 <>
                   <Link
                     href="/sign-in"
                     className={cn(
                       buttonVariants({ variant: "ghost" }),
-                      "text-white hover:bg-white/10 hover:text-white"
+                      "text-violet-500 hover:bg-white/10 hover:text-violet-500"
                     )}
                   >
                     Sign in
@@ -124,12 +146,21 @@ export function Navbar() {
 
             <div className="mt-auto flex flex-col gap-2 border-t border-white/10 p-4">
               {
-                session ? (
+                session ? (<>
                   <span
                     className="rounded-md px-2 py-2 text-sm text-white/70 transition-colors hover:bg-white/5 hover:text-white"
                   >
-                    Hi, {session.user?.name}
+                    Welcome, {session.user?.name}
                   </span>
+                   <Button
+                    onClick={handleSignOut}
+                    className={cn(
+                     buttonVariants(), ctaClassName 
+                    )}
+                  >
+                    Sign Out
+                  </Button>
+                  </>
                 ) : (
                   <>
                     <Link

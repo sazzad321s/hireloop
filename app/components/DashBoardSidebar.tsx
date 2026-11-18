@@ -6,6 +6,7 @@ import {
   CreditCard,
   FileText,
   LayoutDashboard,
+  PlusCircle,
   Settings,
   Users,
   type LucideIcon,
@@ -24,6 +25,7 @@ import {
 } from "@/components/ui/sidebar"
 import { useSession } from "@/lib/auth-client"
 import { DEFAULT_USER_ROLE, isUserRole, type UserRole } from "@/lib/user-roles"
+import Link from "next/link";
 
 type MenuItem = {
   name: string
@@ -47,6 +49,7 @@ const menuItemsbyRole: Record<UserRole, MenuItem[]> = {
   recruiter: [
     { name: "Dashboard", url: "/dashboard/recruiter", icon: LayoutDashboard },
     { name: "Manage Jobs", url: "/dashboard/recruiter/jobs", icon: Briefcase },
+    { name: "Add Jobs", url: "/dashboard/recruiter/jobs/new", icon: PlusCircle },
     {
       name: "Applications",
       url: "/dashboard/recruiter/applications",
@@ -90,7 +93,7 @@ const DashBoardSidebar = () => {
             {menuItemsbyRole[role].map((item) => (
               <SidebarMenuItem key={item.name}>
                 <SidebarMenuButton
-                  render={<a href={item.url} />}
+                  render={<Link href={item.url} />}
                   isActive={isActive(item.url)}
                 >
                   <item.icon />

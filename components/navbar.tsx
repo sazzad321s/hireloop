@@ -19,11 +19,7 @@ import { cn } from "@/lib/utils"
 import { signOut, useSession } from "@/lib/auth-client"
 import { useRouter } from "next/navigation"
 
-const navLinks = [
-  { label: "Browse Jobs", href: "/jobs" },
-  { label: "Company", href: "/company" },
-  { label: "Pricing", href: "/pricing" },
-]
+
 
 const ctaClassName =
   "bg-violet-500 text-white hover:bg-violet-400 focus-visible:ring-violet-400/50"
@@ -33,6 +29,13 @@ export function Navbar() {
   const router = useRouter();
   const {data: session} = useSession();
   console.log("Session in Navbar:", session);
+
+  const navLinks = [
+  { label: "Browse Jobs", href: "/jobs" },
+  { label: "Company", href: "/company" },
+  { label: "Pricing", href: "/pricing" },
+  { label: "Dashboard", href: `/dashboard/${session?.user?.role}` },
+]
 
   const handleSignOut = async () => {
     try {

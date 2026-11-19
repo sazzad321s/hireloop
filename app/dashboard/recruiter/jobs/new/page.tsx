@@ -25,7 +25,7 @@ import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
 
-const JOB_TYPES = ["Full-time", "Part-time", "Contract", "Internship"]
+const JOB_TYPES = ["Full-time", "Part-time", "Contract", "Internship"] as const
 
 const JOB_CATEGORIES = [
   "Engineering & Tech",
@@ -37,9 +37,36 @@ const JOB_CATEGORIES = [
   "Customer Support",
   "Operations",
   "Other",
-]
+] as const
 
-const FREQUENCIES = ["per hour", "per month", "per year"]
+const FREQUENCIES = [
+  "per hour",
+  "per day",
+  "per week",
+  "per month",
+  "per year",
+] as const
+
+export type JobType = (typeof JOB_TYPES)[number]
+
+export type JobCategory = (typeof JOB_CATEGORIES)[number]
+
+export type Frequency = (typeof FREQUENCIES)[number]
+
+export type JobFormData = {
+  title: string
+  company: string
+  category: JobCategory
+  jobType: JobType
+  remoteAllowed: boolean
+  location: string
+  deadline: string
+  minSalary: number
+  maxSalary: number
+  frequency: Frequency
+  responsibilities: string
+  qualifications: string
+}
 
 const fieldClassName = "h-11"
 
@@ -50,7 +77,7 @@ const ctaClassName =
 
 function SectionHeading({ index, title }: { index: number; title: string }) {
   return (
-    <div className="flex  items-center gap-3">
+    <div className="flex items-center gap-3">
       <span className="flex size-7 shrink-0 items-center justify-center rounded-lg border border-border bg-muted/50 text-xs font-medium text-muted-foreground">
         {index}
       </span>
@@ -66,11 +93,21 @@ export default function NewJobPage() {
     event.preventDefault()
 
     const formData = new FormData(event.currentTarget)
+    const value = (key: string) => String(formData.get(key) ?? "").trim()
 
-    // Everything is a named field, so FormData already has the full payload.
-    const job = {
-      ...Object.fromEntries(formData),
+    const job: JobFormData = {
+      title: value("title"),
+      company: value("company"),
+      category: value("category") as JobCategory,
+      jobType: value("jobType") as JobType,
       remoteAllowed: formData.get("remoteAllowed") === "on",
+      location: value("location"),
+      deadline: value("deadline"),
+      minSalary: Number(value("minSalary") || 0),
+      maxSalary: Number(value("maxSalary") || 0),
+      frequency: value("frequency") as Frequency,
+      responsibilities: value("responsibilities"),
+      qualifications: value("qualifications"),
     }
 
     console.log("New job:", job)
@@ -104,14 +141,6 @@ export default function NewJobPage() {
               our network.
             </p>
           </div>
-
-          <Button
-            type="submit"
-            className={cn(ctaClassName, "h-10 rounded-xl px-4")}
-          >
-            Publish Job
-            <ArrowRight className="size-4" />
-          </Button>
         </header>
 
         {submitted && (
@@ -186,8 +215,8 @@ export default function NewJobPage() {
                     className={cn(
                       "flex h-11 cursor-pointer items-center justify-center rounded-lg border border-border text-sm text-muted-foreground transition-colors select-none",
                       "hover:bg-muted/50 hover:text-foreground",
-                      "has-[:checked]:border-violet-400 has-[:checked]:bg-violet-500/10 has-[:checked]:text-foreground",
-                      "has-[:focus-visible]:ring-3 has-[:focus-visible]:ring-violet-400/40"
+                      "has-checked:border-violet-400 has-checked:bg-violet-500/10 has-checked:text-foreground",
+                      "has-focus-visible:ring-3 has-focus-visible:ring-violet-400/40"
                     )}
                   >
                     <input
@@ -355,6 +384,15 @@ export default function NewJobPage() {
                 className="min-h-28"
               />
             </Field>
+          </section>
+          <section>
+            <Button
+              type="submit"
+              className={cn(ctaClassName, "h-10 rounded-xl px-4")}
+            >
+              Publish Job
+              <ArrowRight className="size-4" />
+            </Button>
           </section>
         </div>
       </form>

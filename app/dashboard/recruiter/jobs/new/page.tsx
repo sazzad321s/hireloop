@@ -24,6 +24,7 @@ import {
 import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
+import { createJob } from "@/lib/actions/jobs"
 
 const JOB_TYPES = ["Full-time", "Part-time", "Contract", "Internship"] as const
 
@@ -89,7 +90,7 @@ function SectionHeading({ index, title }: { index: number; title: string }) {
 export default function NewJobPage() {
   const [submitted, setSubmitted] = useState(false)
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
     const formData = new FormData(event.currentTarget)
@@ -110,7 +111,9 @@ export default function NewJobPage() {
       qualifications: value("qualifications"),
     }
 
-    console.log("New job:", job)
+    const result = await createJob(job);
+    console.log("Job created:", result);
+
     setSubmitted(true)
   }
 

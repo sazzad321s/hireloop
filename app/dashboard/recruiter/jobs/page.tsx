@@ -1,4 +1,3 @@
-
 import Link from "next/link"
 import {
   ChevronRight,
@@ -19,7 +18,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { getJobs, type Job } from "@/lib/api/jobs"
+import { getJobs } from "@/lib/api/jobs"
+import { DEFAULT_JOB_STATUS, type Job } from "@/types/job"
 import { cn } from "@/lib/utils"
 import { DeleteJobDialog } from "@/app/components/DeleteJobDialouge"
 
@@ -192,11 +192,12 @@ const ManageJobsPage = async () => {
                 const categoryColor =
                   CATEGORY_COLORS[post.category] ?? DEFAULT_CATEGORY_COLOR
                 const initial = post.title.trim().charAt(0).toUpperCase() || "?"
-                const status = post.status ?? "Active"
-                const statusCaption =
-                  status === "Active"
-                    ? (post.postedAt ?? "Posted recently")
-                    : "Closed"
+                const status = (post.status ?? DEFAULT_JOB_STATUS).toLowerCase()
+                const isActive = status === "active"
+                const statusLabel = isActive ? "Active" : "Expired"
+                const statusCaption = isActive
+                  ? (post.postedAt ?? "Posted recently")
+                  : "Closed"
 
                 return (
                   <TableRow key={post._id}>
@@ -255,7 +256,7 @@ const ManageJobsPage = async () => {
                           variant="outline"
                           className={cn(
                             "gap-1.5",
-                            status === "Active"
+                            isActive
                               ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-500"
                               : "border-border bg-muted text-muted-foreground"
                           )}
@@ -263,12 +264,12 @@ const ManageJobsPage = async () => {
                           <span
                             className={cn(
                               "size-1.5 rounded-full",
-                              status === "Active"
+                              isActive
                                 ? "bg-emerald-500"
                                 : "bg-muted-foreground/60"
                             )}
                           />
-                          {status}
+                          {statusLabel}
                         </Badge>
                         <span className="text-[11px] text-muted-foreground">
                           {statusCaption}
@@ -292,7 +293,7 @@ const ManageJobsPage = async () => {
                           <Pencil className="size-3.5" />
                           <span className="hidden sm:inline">Update</span>
                         </button>
-                       <DeleteJobDialog job={post}/>
+                        <DeleteJobDialog job={post} />
                         <button
                           type="button"
                           aria-label={`More actions for ${post.title}`}

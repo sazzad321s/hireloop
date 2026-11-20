@@ -25,49 +25,19 @@ import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
 import { createJob } from "@/lib/actions/jobs"
-
-const JOB_TYPES = ["Full-time", "Part-time", "Contract", "Internship"] as const
-
-const JOB_CATEGORIES = [
-  "Engineering & Tech",
-  "Design",
-  "Product",
-  "Marketing",
-  "Sales",
-  "Finance",
-  "Customer Support",
-  "Operations",
-  "Other",
-] as const
-
-const FREQUENCIES = [
-  "per hour",
-  "per day",
-  "per week",
-  "per month",
-  "per year",
-] as const
-
-export type JobType = (typeof JOB_TYPES)[number]
-
-export type JobCategory = (typeof JOB_CATEGORIES)[number]
-
-export type Frequency = (typeof FREQUENCIES)[number]
-
-export type JobFormData = {
-  title: string
-  company: string
-  category: JobCategory
-  jobType: JobType
-  remoteAllowed: boolean
-  location: string
-  deadline: string
-  minSalary: number
-  maxSalary: number
-  frequency: Frequency
-  responsibilities: string
-  qualifications: string
-}
+import {
+  DEFAULT_JOB_APPLICANTS,
+  DEFAULT_JOB_STATUS,
+  FREQUENCIES,
+  JOB_CATEGORIES,
+  JOB_TYPES,
+  type Frequency,
+  type JobCategory,
+  type JobFormData,
+  type JobType,
+} from "@/types/job"
+import { toast } from "@/components/ui/toast"
+import { useRouter } from "next/navigation"
 
 const fieldClassName = "h-11"
 
@@ -89,6 +59,7 @@ function SectionHeading({ index, title }: { index: number; title: string }) {
 
 export default function NewJobPage() {
   const [submitted, setSubmitted] = useState(false)
+  const router = useRouter()
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -109,10 +80,19 @@ export default function NewJobPage() {
       frequency: value("frequency") as Frequency,
       responsibilities: value("responsibilities"),
       qualifications: value("qualifications"),
+      status: DEFAULT_JOB_STATUS,
+      applicants: DEFAULT_JOB_APPLICANTS,
     }
 
-    const result = await createJob(job);
-    console.log("Job created:", result);
+    
+    const result = await createJob(job)
+    if(result.insertedId){
+      toast.add({
+        title: "Job Created",
+        description: "The job listing has been successfully created."
+      })
+      router.push(`/dashboard/recruiter/jobs`);
+    }
 
     setSubmitted(true)
   }

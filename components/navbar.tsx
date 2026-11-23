@@ -31,7 +31,7 @@ export function Navbar() {
   console.log("Session in Navbar:", session);
 
   const navLinks = [
-  { label: "Browse Jobs", href: "/jobs" },
+  { label: "Browse Jobs", href: "/browse-jobs" },
   { label: "Company", href: "/company" },
   { label: "Pricing", href: "/pricing" },
   { label: "Dashboard", href: `/dashboard/${session?.user?.role}` },

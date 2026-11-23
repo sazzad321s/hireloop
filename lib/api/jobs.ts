@@ -1,8 +1,8 @@
 import { API_BASE_URL } from "@/lib/api/config"
 import type { Job } from "@/types/job"
 
-export async function getJobs(): Promise<Job[]> {
-  const res = await fetch(`${API_BASE_URL}/jobs`, { cache: "no-store" })
+export async function getJobs(query = ''): Promise<Job[]> {
+  const res = await fetch(`${API_BASE_URL}/jobs?${query}`, { cache: "no-store" })
 
   if (!res.ok) {
     throw new Error(`Failed to fetch jobs: ${res.status} ${res.statusText}`)

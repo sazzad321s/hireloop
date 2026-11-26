@@ -1,20 +1,23 @@
 "use client"
 
 import { JOB_CATEGORIES, JOB_TYPES } from "@/types/job"
+import { useRouter } from "next/navigation"
 
 type FilterRadioProps = {
   name: string
   value: string
   label: string
+  onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void
 }
 
-function FilterRadio({ name, value, label }: FilterRadioProps) {
+function FilterRadio({ name, value, label, onChange }: FilterRadioProps) {
   return (
     <label className="flex cursor-pointer items-center gap-2.5 text-sm text-zinc-400">
       <input
         type="radio"
         name={name}
         value={value}
+        onChange={onChange}
         className="size-4 shrink-0 cursor-pointer accent-violet-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-400"
       />
       {label}
@@ -23,6 +26,15 @@ function FilterRadio({ name, value, label }: FilterRadioProps) {
 }
 
 export function JobFilters() {
+
+const router = useRouter();
+
+ const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const params = new URLSearchParams(window.location.search)
+  params.set(event.target.name, event.target.value)
+  router.push(`/browse-jobs?${params.toString()}`)
+ }
+
   return (
     <aside
       aria-labelledby="filters-heading"
@@ -47,6 +59,7 @@ export function JobFilters() {
               name="jobType"
               value={type}
               label={type}
+              onChange={handleCheckboxChange}
             />
           ))}
         </fieldset>
@@ -61,9 +74,21 @@ export function JobFilters() {
               name="category"
               value={category}
               label={category}
+              onChange={handleCheckboxChange}
             />
           ))}
         </fieldset>
+
+        <label className="flex cursor-pointer items-center gap-2.5 text-sm text-zinc-400">
+          <input
+            type="checkbox"
+            name="remoteAllowed"
+            value="true"
+            onChange={handleCheckboxChange}
+            className="size-4 shrink-0 cursor-pointer accent-violet-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-400"
+          />
+          Remote jobs only
+        </label>
       </form>
     </aside>
   )

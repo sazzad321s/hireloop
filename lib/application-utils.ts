@@ -1,4 +1,13 @@
-import type { JobApplication } from "@/types/application"
+import type { ApplicationStatus, JobApplication } from "@/types/application"
+
+export const applicationStatusLabels: Record<ApplicationStatus, string> = {
+  applied: "Applied",
+  review: "Review",
+  shortlisted: "Shortlisted",
+  interview: "Interview",
+  rejected: "Rejected",
+  offered: "Offered",
+}
 
 export function getApplicationStats(applications: JobApplication[]) {
   const count = (status: JobApplication["status"]) =>

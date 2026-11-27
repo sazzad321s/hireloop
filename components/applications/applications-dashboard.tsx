@@ -12,10 +12,14 @@ import {
 } from "lucide-react"
 
 import { ApplicationDetails } from "@/components/applications/application-details"
-import { applicationStatusLabels } from "@/components/applications/application-status"
 import { ApplicationsTable } from "@/components/applications/applications-table"
 import { Input } from "@/components/ui/input"
-import { getApplicationStats } from "@/lib/application-utils"
+import {
+  applicationStatusLabels,
+  getApplicationStats,
+} from "@/lib/application-utils"
+import { exportApplicationsPdf } from "@/lib/export-applications"
+import { toast } from "@/components/ui/toast"
 import { useSession } from "@/lib/auth-client"
 import { cn } from "@/lib/utils"
 import type { JobApplication } from "@/types/application"
@@ -34,6 +38,7 @@ export function ApplicationsDashboard({
   const [query, setQuery] = useState("")
   const [view, setView] = useState<"active" | "archived">("active")
   const [page, setPage] = useState(1)
+  const [isExporting, setIsExporting] = useState(false)
   const [selectedApplication, setSelectedApplication] =
     useState<JobApplication | null>(null)
   const { data: session } = useSession()
@@ -73,17 +78,24 @@ export function ApplicationsDashboard({
     },
   ]
 
+  async function handleExport() {
+    if (isExporting) return
+    setIsExporting(true)
+    try {
+      await exportApplicationsPdf(filteredApplications, view)
+    } catch {
+      toast.add({
+        title: "Could not export applications. Please try again.",
+        type: "error",
+      })
+    } finally {
+      setIsExporting(false)
+    }
+  }
+
   return (
-    <div
-      className={cn(
-        "min-h-[calc(100svh-2rem)] bg-[#0e0e10] text-zinc-200",
-        "print:min-h-0 print:bg-white! print:text-black!",
-        "print:**:border-[#ddd]! print:**:bg-transparent! print:**:text-black! print:**:shadow-none!",
-        "print:[&_table]:w-full print:[&_table]:whitespace-normal print:[&_td]:p-2.5 print:[&_td]:whitespace-normal print:[&_th]:p-2.5 print:[&_th]:whitespace-normal print:[&_tr]:break-inside-avoid",
-        "print:[body:has(&)_[data-slot=sidebar-trigger]]:hidden! print:[body:has(&)_[data-slot=sidebar]]:hidden!"
-      )}
-    >
-      <div className="flex h-16 items-center justify-between gap-4 border-b border-white/5 px-4 sm:px-6 lg:px-8 print:hidden">
+    <div className="min-h-[calc(100svh-2rem)] bg-[#0e0e10] text-zinc-200">
+      <div className="flex h-16 items-center justify-between gap-4 border-b border-white/5 px-4 sm:px-6 lg:px-8">
         <div className="relative w-full max-w-sm">
           <Search
             aria-hidden="true"
@@ -127,7 +139,7 @@ export function ApplicationsDashboard({
               Track your job applications and interview progress in real-time.
             </p>
           </div>
-          <div className="flex items-center gap-3 print:hidden">
+          <div className="flex items-center gap-3">
             <div
               role="group"
               aria-label="Application view"
@@ -155,12 +167,13 @@ export function ApplicationsDashboard({
             </div>
             <button
               type="button"
-              onClick={() => window.print()}
-              title="Print or save as PDF"
-              className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-lg bg-zinc-100 px-4 text-xs font-semibold text-zinc-900 transition-colors hover:bg-violet-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-400"
+              onClick={handleExport}
+              disabled={isExporting}
+              aria-busy={isExporting}
+              className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-lg bg-zinc-100 px-4 text-xs font-semibold text-zinc-900 transition-colors hover:bg-violet-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-400 disabled:cursor-wait disabled:opacity-60"
             >
               <Download aria-hidden="true" className="size-4" />
-              Export PDF
+              {isExporting ? "Exporting…" : "Export PDF"}
             </button>
           </div>
         </header>
@@ -195,7 +208,7 @@ export function ApplicationsDashboard({
             referenceTime={referenceTime}
             onDetails={setSelectedApplication}
           />
-          <footer className="flex flex-wrap items-center justify-between gap-4 border-t border-white/5 bg-[#1c1c20] px-6 py-4 print:hidden">
+          <footer className="flex flex-wrap items-center justify-between gap-4 border-t border-white/5 bg-[#1c1c20] px-6 py-4">
             <p aria-live="polite" className="text-xs text-zinc-500">
               Showing {filteredApplications.length ? start + 1 : 0}–
               {Math.min(start + PAGE_SIZE, filteredApplications.length)} of{" "}

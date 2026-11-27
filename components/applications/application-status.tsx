@@ -1,14 +1,6 @@
 import { cn } from "@/lib/utils"
+import { applicationStatusLabels } from "@/lib/application-utils"
 import type { ApplicationStatus as Status } from "@/types/application"
-
-export const applicationStatusLabels: Record<Status, string> = {
-  applied: "Applied",
-  review: "Review",
-  shortlisted: "Shortlisted",
-  interview: "Interview",
-  rejected: "Rejected",
-  offered: "Offered",
-}
 
 const statusStyles: Record<Status, string> = {
   applied: "border-zinc-500/20 bg-zinc-500/15 text-zinc-400",

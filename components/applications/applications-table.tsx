@@ -58,7 +58,7 @@ export function ApplicationsTable({
   const start = (page - 1) * pageSize
 
   return (
-    <Table className="min-w-170 text-sm print:min-w-0">
+    <Table className="min-w-170 text-sm">
       <caption className="sr-only">
         Your job applications and their current status
       </caption>
@@ -70,7 +70,7 @@ export function ApplicationsTable({
                 key={heading}
                 className={cn(
                   "h-12 px-6 text-xs font-normal text-zinc-500",
-                  heading === "Action" && "text-right print:hidden"
+                  heading === "Action" && "text-right"
                 )}
               >
                 {heading}
@@ -90,14 +90,10 @@ export function ApplicationsTable({
             </TableCell>
           </TableRow>
         ) : (
-          applications.map((application, index) => (
+          applications.slice(start, start + pageSize).map((application) => (
             <TableRow
               key={application._id}
-              className={cn(
-                "border-white/5 hover:bg-white/3",
-                (index < start || index >= start + pageSize) &&
-                  "hidden print:table-row"
-              )}
+              className="border-white/5 hover:bg-white/3"
             >
               <TableCell className="px-6 py-4">
                 <div className="flex items-center gap-3">
@@ -127,7 +123,7 @@ export function ApplicationsTable({
               <TableCell className="px-6 py-4">
                 <ApplicationStatus status={application.status} />
               </TableCell>
-              <TableCell className="px-6 py-4 text-right print:hidden">
+              <TableCell className="px-6 py-4 text-right">
                 <button
                   type="button"
                   onClick={() => onDetails(application)}

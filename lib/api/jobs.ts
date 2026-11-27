@@ -15,8 +15,14 @@ export async function getJobs(query = ""): Promise<Job[]> {
   return Array.isArray(data) ? (data as Job[]) : []
 }
 
-export async function getJob(id: string): Promise<Job | null> {
-  // The API currently exposes jobs through its collection endpoint only.
-  const jobs = await getJobs()
-  return jobs.find((job) => job._id === id) ?? null
+export async function getJobById(id: string): Promise<Job | null> {
+
+  const res = await fetch(`${API_BASE_URL}/jobs/${id}`, {
+    cache: "no-store",
+  })
+
+  if (!res.ok) {
+    throw new Error(`Failed to fetch job by ID: ${res.status} ${res.statusText}`)
+  }
+  return res.json()
 }

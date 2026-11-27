@@ -1,10 +1,11 @@
-import type { ReactNode } from "react"
+"use client"
+import { useState, type ReactNode } from "react"
 import {
   BadgeCheck,
   Banknote,
   BriefcaseBusiness,
   Building2,
-  ChartNoAxesColumnIncreasing,
+  CalendarDays,
   CircleCheck,
   MapPin,
 } from "lucide-react"
@@ -13,6 +14,11 @@ import { CompanyOverview } from "@/components/jobs/company-overview"
 import { SaveJobButton } from "@/components/jobs/save-job-button"
 import { formatSalary, getWebsiteUrl } from "@/lib/job-utils"
 import type { Job } from "@/types/job"
+import { useSession } from "@/lib/auth-client"
+import { useRouter } from "next/navigation"
+import { applyToAJob } from "@/lib/actions/applications"
+import { toast } from "@/components/ui/toast"
+import type { JobApplicationInput } from "@/types/application"
 
 function DetailSection({
   title,
@@ -50,9 +56,16 @@ function DetailList({ text, fallback }: { text?: string; fallback: string }) {
   )
 }
 
-export function JobDetails({ job, isExpired }: { job: Job; isExpired: boolean }) {
+export function JobDetails({
+  job,
+  isExpired,
+}: {
+  job: Job
+  isExpired: boolean
+}) {
   const salary = formatSalary(job)
   const applicationUrl = getWebsiteUrl(job.applicationUrl)
+  const deadline = new Date(job.deadline)
   const summary = [
     {
       label: "Salary range",
@@ -73,11 +86,84 @@ export function JobDetails({ job, isExpired }: { job: Job; isExpired: boolean })
       icon: BriefcaseBusiness,
     },
     {
-      label: "Experience",
-      value: job.experience || "Not specified",
-      icon: ChartNoAxesColumnIncreasing,
+      label: "Deadline",
+      value: Number.isNaN(deadline.getTime())
+        ? "Not specified"
+        : deadline.toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+            timeZone: "UTC",
+          }),
+      icon: CalendarDays,
     },
   ]
+
+  const { data: session, isPending: isSessionPending } = useSession()
+  const user = session?.user
+  const router = useRouter()
+  const [isApplying, setIsApplying] = useState(false)
+  const handleApplyNow = async () => {
+    if (isExpired || isApplying || isSessionPending) return
+
+    if (!user) {
+      router.push(
+        `/sign-in?redirectTo=${encodeURIComponent(`/browse-jobs/${job._id}`)}`
+      )
+      return
+    }
+
+    if (user.role !== "seeker") {
+      toast.add({
+        title: "Only job seekers can apply for jobs.",
+        type: "error",
+      })
+      return
+    }
+
+    setIsApplying(true)
+
+    try {
+      const now = new Date().toISOString()
+      const application: JobApplicationInput = {
+        jobId: job._id,
+        userId: user.id,
+        applicantName: user.name,
+        email: user.email,
+        title: job.title,
+        company: job.company,
+        category: job.category,
+        jobType: job.jobType,
+        location: job.location,
+        workMode: job.remoteAllowed ? "Remote" : "On-site",
+        status: "applied",
+        appliedAt: now,
+        updatedAt: now,
+        archived: false,
+      }
+
+      await applyToAJob(application)
+      toast.add({
+        title: "Application submitted successfully",
+        type: "success",
+      })
+
+      if (applicationUrl) {
+        window.location.assign(applicationUrl)
+      } else {
+        router.push("/dashboard/seeker/applications")
+      }
+    } catch (error) {
+      toast.add({
+        title: "Application could not be submitted",
+        description:
+          error instanceof Error ? error.message : "Please try again.",
+        type: "error",
+      })
+    } finally {
+      setIsApplying(false)
+    }
+  }
 
   return (
     <>
@@ -113,39 +199,20 @@ export function JobDetails({ job, isExpired }: { job: Job; isExpired: boolean })
         <div className="shrink-0 sm:max-w-52">
           <div className="flex items-center gap-3 sm:justify-end">
             <SaveJobButton key={job._id} title={job.title} />
-            {applicationUrl && !isExpired ? (
-              <a
-                href={applicationUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex h-11 items-center justify-center rounded-lg bg-zinc-100 px-5 text-sm font-semibold text-zinc-950 transition-colors hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-violet-400"
-              >
-                Apply Now
-              </a>
-            ) : (
-              <button
-                type="button"
-                disabled
-                aria-describedby="application-status"
-                className="h-11 cursor-not-allowed rounded-lg bg-zinc-100 px-5 text-sm font-semibold text-zinc-950 opacity-60"
-              >
-                {isExpired ? "Applications Closed" : "Apply Now"}
-              </button>
-            )}
-          </div>
-          {!applicationUrl && !isExpired && (
-            <p
-              id="application-status"
-              className="mt-2 text-xs text-zinc-500 sm:text-right"
+            <button
+              type="button"
+              disabled={isExpired || isApplying || isSessionPending}
+              aria-busy={isApplying}
+              onClick={handleApplyNow}
+              className="h-11 cursor-pointer rounded-lg bg-zinc-100 px-5 text-sm font-semibold text-zinc-950 transition-all duration-200 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-violet-400 hover:enabled:bg-violet-500 hover:enabled:text-white hover:enabled:shadow-lg hover:enabled:shadow-violet-500/20 active:enabled:translate-y-px disabled:cursor-not-allowed disabled:opacity-60"
             >
-              Application link not provided.
-            </p>
-          )}
-          {isExpired && (
-            <p id="application-status" className="sr-only">
-              This job is no longer accepting applications.
-            </p>
-          )}
+              {isExpired
+                ? "Applications Closed"
+                : isApplying
+                  ? "Applying…"
+                  : "Apply Now"}
+            </button>
+          </div>
         </div>
       </header>
 

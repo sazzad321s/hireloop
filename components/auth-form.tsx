@@ -3,7 +3,7 @@
 import * as React from "react"
 import type { SVGProps } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { LoaderCircle } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -81,6 +81,10 @@ function GoogleIcon(props: SVGProps<SVGSVGElement>) {
 export function AuthForm({ mode }: { mode: AuthMode }) {
   const c = content[mode]
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const redirectTo = searchParams.get("redirectTo") ?? "/"
+
+  console.log("redirectTo:", redirectTo)
 
   const [error, setError] = React.useState<string | null>(null)
   const [role, setRole] = React.useState<UserRole>(DEFAULT_USER_ROLE)
@@ -123,7 +127,7 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
           ? await authClient.signIn.email({
               email,
               password,
-              callbackURL: "/",
+              callbackURL: redirectTo,
             })
           : await authClient.signUp.email({
               name,

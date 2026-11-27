@@ -1,6 +1,6 @@
 import Image from "next/image"
 import { ArrowUpRight } from "lucide-react"
-
+import Link from "next/link"
 import officeImage from "@/app/images/company-office.jpg"
 import { getWebsiteUrl } from "@/lib/job-utils"
 import type { Job } from "@/types/job"
@@ -27,7 +27,7 @@ export function CompanyOverview({ job }: { job: Job }) {
         Company Overview
       </h2>
 
-      <div className="relative mt-5 aspect-[16/10] overflow-hidden rounded-lg bg-zinc-900">
+      <div className="relative mt-5 aspect-16/10 overflow-hidden rounded-lg bg-zinc-900">
         {/* Decorative office image, not a photo of the hiring company. */}
         <Image
           src={officeImage}
@@ -60,7 +60,7 @@ export function CompanyOverview({ job }: { job: Job }) {
       </dl>
 
       {website ? (
-        <a
+        <Link
           href={website}
           target="_blank"
           rel="noopener noreferrer"
@@ -68,7 +68,7 @@ export function CompanyOverview({ job }: { job: Job }) {
         >
           Visit Website
           <ArrowUpRight aria-hidden="true" className="size-3.5" />
-        </a>
+        </Link>
       ) : (
         <p className="rounded-lg border border-white/5 bg-white/3 px-3 py-3 text-center text-xs text-zinc-500">
           Company website not provided

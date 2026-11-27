@@ -2,7 +2,7 @@ import { notFound } from "next/navigation"
 
 import { JobDetails } from "@/components/jobs/job-details"
 import { Navbar } from "@/components/navbar"
-import { getJob } from "@/lib/api/jobs"
+import { getJobById } from "@/lib/api/jobs"
 import { isJobExpired } from "@/lib/job-utils"
 
 type JobDetailsPageProps = {
@@ -11,7 +11,7 @@ type JobDetailsPageProps = {
 
 export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
   const { id } = await params
-  const job = await getJob(id)
+  const job = await getJobById(id)
 
   if (!job) notFound()
 

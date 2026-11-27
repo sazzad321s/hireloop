@@ -7,26 +7,17 @@ import {
 } from "lucide-react"
 
 import type { Job } from "@/types/job"
+import { formatSalary } from "@/lib/job-utils"
+import Link from "next/link"
 
 const badgeClassName =
   "inline-flex items-center gap-1.5 rounded-md border border-white/5 bg-white/3 px-2 py-1 text-xs text-zinc-300"
-
-function formatSalary(job: Job) {
-  const format = (amount: number) => `€${amount.toLocaleString("en-US")}`
-
-  if (job.minSalary != null && job.maxSalary != null) {
-    return `${format(job.minSalary)} – ${format(job.maxSalary)}`
-  }
-  if (job.minSalary != null) return `From ${format(job.minSalary)}`
-  if (job.maxSalary != null) return `Up to ${format(job.maxSalary)}`
-
-  return null
-}
 
 export function JobCard({ job }: { job: Job }) {
   const salary = formatSalary(job)
 
   return (
+    <Link href={`/browse-jobs/${job._id}`}>
     <article className="flex gap-4 rounded-xl border border-white/5 bg-[#141416] p-5 transition-colors hover:border-white/15 sm:p-6">
       <div
         aria-hidden="true"
@@ -71,5 +62,6 @@ export function JobCard({ job }: { job: Job }) {
         <Bookmark aria-hidden="true" className="size-4" />
       </button>
     </article>
+    </Link>
   )
 }

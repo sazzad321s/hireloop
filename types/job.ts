@@ -80,4 +80,14 @@ export type Job = {
   applicants?: number
   status?: JobStatus
   postedAt?: string
+  /** Optional details: older listings and the basic posting form omit these. */
+  description?: string
+  experience?: string
+  skills?: string[]
+  benefits?: string[]
+  companySize?: string
+  industry?: string
+  companyWebsite?: string
+  verifiedEmployer?: boolean
+  applicationUrl?: string
 }

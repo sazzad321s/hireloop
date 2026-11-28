@@ -19,6 +19,7 @@ import { useRouter } from "next/navigation"
 import { applyToAJob } from "@/lib/actions/applications"
 import { toast } from "@/components/ui/toast"
 import type { JobApplicationInput } from "@/types/application"
+import { getApplicationCount } from "@/lib/api/applications"
 
 function DetailSection({
   title,
@@ -120,10 +121,23 @@ export function JobDetails({
       })
       return
     }
-
     setIsApplying(true)
 
     try {
+      const query = new URLSearchParams({ applicantId: user.id })
+      const countResult = await getApplicationCount(query.toString())
+
+      if (countResult.count >= 10) {
+        toast.add({
+          title: "Application limit reached",
+          description:
+            "You have reached the limit. Please upgrade to a premium account to apply for more jobs.",
+          type: "error",
+        })
+        router.push("/payment")
+        return
+      }
+
       const now = new Date().toISOString()
       const application: JobApplicationInput = {
         jobId: job._id,
